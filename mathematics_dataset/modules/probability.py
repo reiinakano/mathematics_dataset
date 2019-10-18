@@ -233,13 +233,10 @@ def _sample_without_replacement_probability_question(
       continue
     answer = space.probability(event_in_space)
     if answer not in [0, 1] or allow_trivial_prob:
-      print('SAMPLE', sample)
       if sequence is None:
-        print('EVENT.COUNTS', event.counts)
         intermediate_steps = generate_intermediate_steps_level_set(
           sample.letters_distinct, sample.letter_counts, event.counts)
       else:
-        print('SEQUENCE', sequence)
         intermediate_steps = generate_intermediate_steps_sequence(
           sample.letters_distinct, sample.letter_counts, sequence
         )
@@ -265,7 +262,7 @@ def _sample_without_replacement_probability_question(
   print('QUESTION', question)
   print('INTERMEDIATE STEPS\n', intermediate_steps)
   print('ANSWER', answer)
-  print('type answer', type(answer))
+  assert str(answer) == intermediate_steps.split('\n')[-1]
   return example.Problem(question, answer, intermediate_steps)
 
 
@@ -288,14 +285,12 @@ def generate_intermediate_steps_sequence(letters_distinct, letter_counts, sequen
   factor_strings = []
   prob_combination = sympy.Integer(1)
   for letter in sequence:
-    print(letter)
     factor_string = f"({letter_to_remaining_count_dict[letter]}/{num_letters_left})"
     factor = sympy.Integer(letter_to_remaining_count_dict[letter]) / num_letters_left
     num_letters_left -= 1
     letter_to_remaining_count_dict[letter] -= 1
     factor_strings.append(factor_string)
     prob_combination *= factor
-    print('factor_string', factor_string, 'factor_simplified', factor)
   solution_so_far += '*'.join(factor_strings)
   solution_so_far += '=' + str(prob_combination)
   solution_so_far += '\n'
@@ -314,7 +309,6 @@ def generate_intermediate_steps_level_set(letters_distinct, letter_counts, sampl
   for letter, sampled_count in sampled_counts.items():
     if sampled_count == 0:
       continue
-    print(letter, sampled_count)
     for _ in range(sampled_count):
       factor_string = f"({letter_to_remaining_count_dict[letter]}/{num_letters_left})"
       factor = sympy.Integer(letter_to_remaining_count_dict[letter]) / num_letters_left
@@ -322,7 +316,6 @@ def generate_intermediate_steps_level_set(letters_distinct, letter_counts, sampl
       letter_to_remaining_count_dict[letter] -= 1
       factor_strings.append(factor_string)
       prob_combination *= factor
-      print('factor_string', factor_string, 'factor_simplified', factor)
   solution_so_far += '*'.join(factor_strings)
   solution_so_far += '=' + str(prob_combination)
   solution_so_far += '\n'
