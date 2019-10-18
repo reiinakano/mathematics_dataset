@@ -54,6 +54,6 @@ def question(context, template, **kwargs):
   return prefix + template.format(**kwargs)
 
 
-Problem = collections.namedtuple('Problem', ('question', 'answer'))
+Problem = collections.namedtuple('Problem', ('question', 'answer', 'intermediate_steps'))
 
 

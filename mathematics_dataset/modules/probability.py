@@ -236,9 +236,12 @@ def _sample_without_replacement_probability_question(
       print('SAMPLE', sample)
       if sequence is None:
         print('EVENT.COUNTS', event.counts)
-        print(generate_intermediate_steps_level_set(sample.letters_distinct, sample.letter_counts, event.counts))
+        intermediate_steps = generate_intermediate_steps_level_set(
+          sample.letters_distinct, sample.letter_counts, event.counts)
       else:
         print('SEQUENCE', sequence)
+      if answer in [0, 1]:
+        intermediate_steps = str(answer)
       break
 
   context = composition.Context()
@@ -257,11 +260,12 @@ def _sample_without_replacement_probability_question(
           str(random_variable.description).capitalize()),
       event=event_description)
   print('QUESTION', question)
-  print('answer', answer)
+  print('INTERMEDIATE STEPS\n', intermediate_steps)
+  print('ANSWER', answer)
   print('type answer', type(answer))
   import sys
   sys.exit()
-  return example.Problem(question, answer)
+  return example.Problem(question, answer, intermediate_steps)
 
 
 def swr_prob_sequence(is_train, sample_range):
@@ -302,18 +306,22 @@ def generate_intermediate_steps_level_set(letters_distinct, letter_counts, sampl
   solution_so_far += '\n'
 
   # Calculate the number of possible combinations of the sampled sequence.
+  if np.count_nonzero(list(sampled_counts.values())) == 1:
+    solution_so_far += str(prob_combination)
+    return solution_so_far
   sampled_length = sum(sampled_counts.values())
   solution_so_far += f'{sampled_length}!'
-  solution_so_far += '/'
 
   factor_strings = []
   denominator = sympy.Integer(1)
   for sampled_count in sampled_counts.values():
-    if sampled_count == 0:
+    if sampled_count < 2:
       continue
     factor_strings.append(str(sampled_count)+'!')
     denominator *= sympy.factorial(sampled_count)
-  solution_so_far += '(' + '*'.join(factor_strings) + ')'
+  if factor_strings:
+    solution_so_far += '/'
+    solution_so_far += '(' + '*'.join(factor_strings) + ')'
   solution_so_far += '='
   number_combinations = sympy.factorial(sampled_length) / denominator
   solution_so_far += str(number_combinations)
