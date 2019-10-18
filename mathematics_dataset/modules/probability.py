@@ -34,6 +34,8 @@ import numpy as np
 from six.moves import range
 from six.moves import zip
 
+import sympy
+
 
 _LETTERS = string.ascii_lowercase
 
@@ -104,7 +106,7 @@ def _sequence_event(values, length, verb):
   event = probability.FiniteProductEvent(events)
   sequence = ''.join(str(sample) for sample in samples)
   event_description = 'sequence {sequence}'.format(sequence=sequence)
-  return event, event_description
+  return event, event_description, sequence
 
 
 def _word_series(words, conjunction='and'):
@@ -139,12 +141,12 @@ def _level_set_event(values, length, verb):
   verbing = _GERUNDS[verb]
   event_description = template.format(
       counts_and_values=counts_and_values, verbing=verbing)
-  return event, event_description
+  return event, event_description, None
 
 
 LetterBag = collections.namedtuple(
     'LetterBag',
-    ('weights', 'random_variable', 'letters_distinct', 'bag_contents'))
+    ('weights', 'random_variable', 'letters_distinct', 'bag_contents', 'letter_counts'))
 
 
 def _sample_letter_bag(is_train, min_total):
@@ -185,7 +187,8 @@ def _sample_letter_bag(is_train, min_total):
       weights=weights,
       random_variable=random_variable,
       letters_distinct=letters_distinct,
-      bag_contents=bag_contents)
+      bag_contents=bag_contents,
+      letter_counts=letter_counts)
 
 
 def _swr_space(is_train, sample_range):
@@ -203,7 +206,7 @@ def _swr_space(is_train, sample_range):
       + ' letters picked without replacement from '
       + sample.bag_contents)
 
-  return sample.letters_distinct, space, random_variable
+  return sample, space, random_variable
 
 
 def _sample_without_replacement_probability_question(
@@ -220,16 +223,22 @@ def _sample_without_replacement_probability_question(
   allow_trivial_prob = random.random() < _MAX_FRAC_TRIVIAL_PROB
 
   while True:
-    distinct_letters, space, random_variable = _swr_space(
+    sample, space, random_variable = _swr_space(
         is_train, sample_range)
 
-    event, event_description = event_fn(
-        values=distinct_letters, length=space.n_samples, verb='pick')
+    event, event_description, sequence = event_fn(
+        values=sample.letters_distinct, length=space.n_samples, verb='pick')
     event_in_space = random_variable.inverse(event)
     if too_big(event_in_space):
       continue
     answer = space.probability(event_in_space)
     if answer not in [0, 1] or allow_trivial_prob:
+      print('SAMPLE', sample)
+      if sequence is None:
+        print('EVENT.COUNTS', event.counts)
+        print(generate_intermediate_steps_level_set(sample.letters_distinct, sample.letter_counts, event.counts))
+      else:
+        print('SEQUENCE', sequence)
       break
 
   context = composition.Context()
@@ -247,6 +256,11 @@ def _sample_without_replacement_probability_question(
       random_variable_capitalize=(
           str(random_variable.description).capitalize()),
       event=event_description)
+  print('QUESTION', question)
+  print('answer', answer)
+  print('type answer', type(answer))
+  import sys
+  sys.exit()
   return example.Problem(question, answer)
 
 
@@ -260,3 +274,57 @@ def swr_prob_level_set(is_train, sample_range):
   """Probability of given level set when sampling without replacement."""
   return _sample_without_replacement_probability_question(
       is_train=is_train, event_fn=_level_set_event, sample_range=sample_range)
+
+
+def generate_intermediate_steps_level_set(letters_distinct, letter_counts, sampled_counts):
+  # TODO: Handle edge cases like probability resulting in a 0 or 1, or only 1 possible combination of sampled letters
+  solution_so_far = ''
+
+  # Start with calculating the probability of one particular combination of the letters.
+  num_letters_left = sum(letter_counts)
+  letter_to_remaining_count_dict = {k: v for k, v in zip(letters_distinct, letter_counts)}
+  factor_strings = []
+  prob_combination = sympy.Integer(1)
+  for letter, sampled_count in sampled_counts.items():
+    if sampled_count == 0:
+      continue
+    print(letter, sampled_count)
+    for _ in range(sampled_count):
+      factor_string = f"({letter_to_remaining_count_dict[letter]}/{num_letters_left})"
+      factor = sympy.Integer(letter_to_remaining_count_dict[letter]) / num_letters_left
+      num_letters_left -= 1
+      letter_to_remaining_count_dict[letter] -= 1
+      factor_strings.append(factor_string)
+      prob_combination *= factor
+      print('factor_string', factor_string, 'factor_simplified', factor)
+  solution_so_far += '*'.join(factor_strings)
+  solution_so_far += '=' + str(prob_combination)
+  solution_so_far += '\n'
+
+  # Calculate the number of possible combinations of the sampled sequence.
+  sampled_length = sum(sampled_counts.values())
+  solution_so_far += f'{sampled_length}!'
+  solution_so_far += '/'
+
+  factor_strings = []
+  denominator = sympy.Integer(1)
+  for sampled_count in sampled_counts.values():
+    if sampled_count == 0:
+      continue
+    factor_strings.append(str(sampled_count)+'!')
+    denominator *= sympy.factorial(sampled_count)
+  solution_so_far += '(' + '*'.join(factor_strings) + ')'
+  solution_so_far += '='
+  number_combinations = sympy.factorial(sampled_length) / denominator
+  solution_so_far += str(number_combinations)
+  solution_so_far += '\n'
+
+  # Put them together
+  solution_so_far += str(number_combinations) + '*' + str(prob_combination)
+  solution_so_far += '='
+  answer = number_combinations * prob_combination
+  solution_so_far += str(answer)
+
+  solution_so_far += '\n' + str(answer)
+
+  return solution_so_far
