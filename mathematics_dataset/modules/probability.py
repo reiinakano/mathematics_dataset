@@ -240,6 +240,9 @@ def _sample_without_replacement_probability_question(
           sample.letters_distinct, sample.letter_counts, event.counts)
       else:
         print('SEQUENCE', sequence)
+        intermediate_steps = generate_intermediate_steps_sequence(
+          sample.letters_distinct, sample.letter_counts, sequence
+        )
       if answer in [0, 1]:
         intermediate_steps = str(answer)
       break
@@ -263,8 +266,6 @@ def _sample_without_replacement_probability_question(
   print('INTERMEDIATE STEPS\n', intermediate_steps)
   print('ANSWER', answer)
   print('type answer', type(answer))
-  import sys
-  sys.exit()
   return example.Problem(question, answer, intermediate_steps)
 
 
@@ -280,8 +281,29 @@ def swr_prob_level_set(is_train, sample_range):
       is_train=is_train, event_fn=_level_set_event, sample_range=sample_range)
 
 
+def generate_intermediate_steps_sequence(letters_distinct, letter_counts, sequence):
+  solution_so_far = ''
+  num_letters_left = sum(letter_counts)
+  letter_to_remaining_count_dict = {k: v for k, v in zip(letters_distinct, letter_counts)}
+  factor_strings = []
+  prob_combination = sympy.Integer(1)
+  for letter in sequence:
+    print(letter)
+    factor_string = f"({letter_to_remaining_count_dict[letter]}/{num_letters_left})"
+    factor = sympy.Integer(letter_to_remaining_count_dict[letter]) / num_letters_left
+    num_letters_left -= 1
+    letter_to_remaining_count_dict[letter] -= 1
+    factor_strings.append(factor_string)
+    prob_combination *= factor
+    print('factor_string', factor_string, 'factor_simplified', factor)
+  solution_so_far += '*'.join(factor_strings)
+  solution_so_far += '=' + str(prob_combination)
+  solution_so_far += '\n'
+  solution_so_far += str(prob_combination)
+  return solution_so_far
+
+
 def generate_intermediate_steps_level_set(letters_distinct, letter_counts, sampled_counts):
-  # TODO: Handle edge cases like probability resulting in a 0 or 1, or only 1 possible combination of sampled letters
   solution_so_far = ''
 
   # Start with calculating the probability of one particular combination of the letters.
