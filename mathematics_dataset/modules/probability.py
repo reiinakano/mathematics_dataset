@@ -259,9 +259,9 @@ def _sample_without_replacement_probability_question(
       random_variable_capitalize=(
           str(random_variable.description).capitalize()),
       event=event_description)
-  print('QUESTION', question)
-  print('INTERMEDIATE STEPS\n', intermediate_steps)
-  print('ANSWER', answer)
+  #print('QUESTION', question)
+  #print('INTERMEDIATE STEPS\n', intermediate_steps)
+  #print('ANSWER', answer)
   assert str(answer) == intermediate_steps.split('\n')[-1]
   return example.Problem(question, answer, intermediate_steps)
 

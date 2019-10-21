@@ -162,7 +162,7 @@ def main(unused_argv):
         problem, extra_dropped = sample_from_module(module)
         num_dropped += extra_dropped
         text = text_wrapper.fill(
-            '{}  \033[92m{}\033[0m'.format(problem.question, problem.answer))
+            '{} \n{}\n \033[92m{}\033[0m'.format(problem.question, problem.intermediate_steps, problem.answer))
         print(text)
       if num_dropped > 0:
         logging.warning('Dropped %d examples', num_dropped)
