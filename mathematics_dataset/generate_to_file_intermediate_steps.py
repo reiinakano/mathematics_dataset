@@ -68,7 +68,8 @@ def main(unused_argv):
     for module_name, module in six.iteritems(flat_modules):
       path = os.path.join(regime_dir, module_name + '.txt')
       with open(path, 'w') as text_file:
-        for _ in range(per_module):
+        for i in range(per_module):
+          if i % 1000 == 0: print(i)
           problem, _ = generate.sample_from_module(module)
           text_file.write(tokenize(str(problem.question)) + '\n')
           text_file.write(tokenize(str(problem.intermediate_steps)) + '\n')
