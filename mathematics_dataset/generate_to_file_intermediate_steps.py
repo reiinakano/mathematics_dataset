@@ -66,14 +66,16 @@ def main(unused_argv):
     os.mkdir(regime_dir)
     per_module = generate.counts[regime]
     for module_name, module in six.iteritems(flat_modules):
-      path = os.path.join(regime_dir, module_name + '.txt')
-      with open(path, 'w') as text_file:
-        for i in range(per_module):
-          if i % 1000 == 0: print(i)
-          problem, _ = generate.sample_from_module(module)
-          text_file.write(tokenize(str(problem.question)) + '\n')
-          text_file.write(tokenize(str(problem.intermediate_steps)) + '\n')
-      logging.info('Written %s', path)
+      question_path = os.path.join(regime_dir, module_name + '.qu')
+      answers_path = os.path.join(regime_dir, module_name + '.an')
+      with open(question_path, 'w') as question_text_file:
+        with open(answers_path, 'w') as answers_text_file:
+          for i in range(per_module):
+            if i % 1000 == 0: print(i)
+            problem, _ = generate.sample_from_module(module)
+            question_text_file.write(tokenize(str(problem.question)) + '\n')
+            answers_text_file.write(tokenize(str(problem.intermediate_steps)) + '\n')
+      logging.info('Written %s and %s', question_path, answers_path)
 
 
 def tokenize(x: str):
