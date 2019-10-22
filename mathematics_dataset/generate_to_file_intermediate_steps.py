@@ -68,13 +68,16 @@ def main(unused_argv):
     for module_name, module in six.iteritems(flat_modules):
       question_path = os.path.join(regime_dir, module_name + '.qu')
       answers_path = os.path.join(regime_dir, module_name + '.an')
+      padded_answers_path = os.path.join(regime_dir, module_name + '.pa')
       with open(question_path, 'w') as question_text_file:
         with open(answers_path, 'w') as answers_text_file:
-          for i in range(per_module):
-            if i % 1000 == 0: print(i)
-            problem, _ = generate.sample_from_module(module)
-            question_text_file.write(tokenize(str(problem.question)) + '\n')
-            answers_text_file.write(tokenize(str(problem.intermediate_steps)) + '\n')
+          with open(padded_answers_path, 'w') as padded_answers_text_file:
+            for i in range(per_module):
+              if i % 1000 == 0: print(i)
+              problem, _ = generate.sample_from_module(module)
+              question_text_file.write(tokenize(str(problem.question)) + '\n')
+              answers_text_file.write(tokenize(str(problem.intermediate_steps)) + '\n')
+              padded_answers_text_file.write(pad_out_intermediate_answers(tokenize(str(problem.intermediate_steps))) + '\n')
       logging.info('Written %s and %s', question_path, answers_path)
 
 
@@ -84,6 +87,28 @@ def tokenize(x: str):
   x = x.replace(' ', '_')  # spaces replaced by _
   x = ' '.join(x)
   return x
+
+
+def pad_out_intermediate_answers(x: str):
+  """Replaces characters between = and @ with <pad>"""
+  arr = x.split(" ")
+
+  new_arr = []
+  replacing = False
+  for c in arr:
+    if not replacing:
+      if c == '=':
+        replacing = True
+        new_arr.append('=')
+      else:
+        new_arr.append(c)
+    else:
+      if c == '@':
+        replacing=False
+        new_arr.append('@')
+      else:
+        new_arr.append('<pad>')
+  return " ".join(new_arr)
 
 
 if __name__ == '__main__':
