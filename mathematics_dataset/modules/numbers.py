@@ -129,7 +129,7 @@ def place_value(value, sample_args, context=None):
           context,
           'What is the {place_name} digit of {integer}?',
           place_name=place_name, integer=entity.expression_else_handle),
-      answer=answer)
+      answer=answer, intermediate_steps=str(answer))
 
 
 # TODO(b/124040078): add to composition system?
