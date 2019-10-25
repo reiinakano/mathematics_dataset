@@ -280,6 +280,18 @@ def swr_prob_level_set(is_train, sample_range):
 
 def generate_intermediate_steps_sequence(letters_distinct, letter_counts, sequence):
   solution_so_far = ''
+
+  # Start by counting the letters.
+  for letter, count in zip(letters_distinct, letter_counts):
+    solution_so_far += '{}:{}\n'.format(letter, count)
+
+  # Add them up
+  solution_so_far += '+'.join(map(str, letter_counts))
+  solution_so_far += '='
+  solution_so_far += str(sum(letter_counts))
+  solution_so_far += '\n'
+
+  # Calculate probability of a sequence
   num_letters_left = sum(letter_counts)
   letter_to_remaining_count_dict = {k: v for k, v in zip(letters_distinct, letter_counts)}
   factor_strings = []
@@ -301,7 +313,17 @@ def generate_intermediate_steps_sequence(letters_distinct, letter_counts, sequen
 def generate_intermediate_steps_level_set(letters_distinct, letter_counts, sampled_counts):
   solution_so_far = ''
 
-  # Start with calculating the probability of one particular combination of the letters.
+  # Start by counting the letters.
+  for letter, count in zip(letters_distinct, letter_counts):
+    solution_so_far += '{}:{}\n'.format(letter, count)
+
+  # Add them up
+  solution_so_far += '+'.join(map(str, letter_counts))
+  solution_so_far += '='
+  solution_so_far += str(sum(letter_counts))
+  solution_so_far += '\n'
+
+  # Calculate the probability of one particular combination of the letters.
   num_letters_left = sum(letter_counts)
   letter_to_remaining_count_dict = {k: v for k, v in zip(letters_distinct, letter_counts)}
   factor_strings = []
