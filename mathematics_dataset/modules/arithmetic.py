@@ -153,7 +153,8 @@ def _add_question_or_entity(context, p, q, is_question):
     ])
     return example.Problem(
         question=example.question(context, template, p=p, q=q),
-        answer=value)
+        answer=value,
+        intermediate_steps=f'{p.value}+{q.value}={value}@{value}')
   else:
     return composition.Entity(
         context=context,
@@ -185,7 +186,8 @@ def _sub_question_or_entity(context, p, q, is_question):
     template = random.choice(templates)
     return example.Problem(
         question=example.question(context, template, p=p, q=q),
-        answer=value)
+        answer=value,
+        intermediate_steps=f'{p.value}-{q.value}={value}@{value}')
   else:
     return composition.Entity(
         context=context,
@@ -258,7 +260,8 @@ def add_or_sub_in_base(sample_args):
           base=base,
           p=display.NumberInBase(p, base),
           q=display.NumberInBase(q, base)),
-      answer=display.NumberInBase(answer, base))
+      answer=display.NumberInBase(answer, base),
+      intermediate_steps=display.NumberInBase(answer, base))
 
 
 def mul(value, sample_args, context=None):
@@ -289,6 +292,7 @@ def mul(value, sample_args, context=None):
     template = random.choice(templates)
     return example.Problem(
         question=example.question(context, template, p=p, q=q),
+        intermediate_steps=f'{p.value}*{q.value}={answer}@{answer}',
         answer=answer
     )
   else:
@@ -330,6 +334,7 @@ def div(value, sample_args, context=None):
     ])
     return example.Problem(
         question=example.question(context, template, p=p, q=q),
+        intermediate_steps=f'{p.value}/{q.value}={answer}@{answer}',
         answer=answer
     )
   else:

@@ -34,6 +34,7 @@ from six.moves import range
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string('filter', '', 'restrict to matching module names')
+flags.DEFINE_string('hard_filter', '', 'restrict to exact matching module names')
 flags.DEFINE_integer('per_train_module', 10, 'Num of examples per train module')
 flags.DEFINE_integer('per_test_module', 10, 'Num of examples per test module')
 flags.DEFINE_bool('show_dropped', False, 'Whether to print dropped questions')
@@ -75,6 +76,8 @@ def _filter_and_flatten(modules_):
       if isinstance(module_or_function, dict):
         add(module_or_function, full_name)
       else:
+        if FLAGS.hard_filter and FLAGS.hard_filter != full_name:
+          continue
         if FLAGS.filter not in full_name:
           continue
         flat[full_name] = module_or_function
