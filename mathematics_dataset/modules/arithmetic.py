@@ -30,6 +30,7 @@ from mathematics_dataset.sample import ops
 from mathematics_dataset.util import composition
 from mathematics_dataset.util import display
 import sympy
+from sympy.parsing.sympy_parser import parse_expr
 
 
 _ENTROPY_TRAIN = (3, 10)
@@ -292,7 +293,7 @@ def mul(value, sample_args, context=None):
     template = random.choice(templates)
     return example.Problem(
         question=example.question(context, template, p=p, q=q),
-        intermediate_steps=f'{p.value}*{q.value}={answer}@{answer}',
+        intermediate_steps=f'{p.value}*{q.value}={str(parse_expr(f"{p.value}*{q.value}"))}@{answer}',
         answer=answer
     )
   else:
