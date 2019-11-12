@@ -420,6 +420,7 @@ def _calculate(value, sample_args, context, add_sub, mul_div, length=None):
     ])
     return example.Problem(
         question=example.question(context, template, op=op),
+        intermediate_steps=f'{op}={str(parse_expr(str(op)))}@{value}',
         answer=value)
   else:
     return composition.Entity(
